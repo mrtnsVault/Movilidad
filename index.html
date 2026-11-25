@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Movilidad">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="theme-color" content="#141413">
+<title>Movilidad y casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* VOICE everyday: un entrenador de bolsillo, cero texto largo
+   IDEA el cronómetro de pista y la pizarra del gimnasio: una cosa ahora, en grande
+   PICTURE el anillo de tiempo, que se vacía; en descanso cambia de color
+   COLOUR suelo de caucho casi negro o tiza blanca, tinta fuerte, naranja señal = ahora, azul = descanso
+   TYPE Barlow Condensed (marcador deportivo) + Barlow
+   LAYOUT inicio: semana de movilidad arriba y rutinas en filas grandes; sesión: nombre, anillo, botones al pulgar */
+:root{color-scheme:light dark;--bg:light-dark(#f6f5f1,#141413);--card:light-dark(#ffffff,#1f1f1d);--ink:light-dark(#151514,#f3f1ea);--mute:light-dark(#5d5b55,#a9a69c);--line:light-dark(#dedbd2,#34332f);--go:light-dark(#d9480f,#ff6b2c);--rest:light-dark(#2457c5,#5b8cff);--soft:light-dark(#fbe4d8,#3a2318)}
+:root[data-theme=light]{color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Barlow,system-ui,sans-serif;overflow-x:clip;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--go);outline-offset:2px}
+h1,h2,.big{font-family:"Barlow Condensed",Barlow,sans-serif;font-weight:700;letter-spacing:-.01em;line-height:1.05;margin:0}
+.wrap{max-width:640px;margin:0 auto;padding:max(18px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+#home h1{font-size:40px}
+.lead{color:var(--mute);margin:4px 0 18px}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.day{aspect-ratio:1;border-radius:10px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;font:600 14px Barlow,sans-serif;color:var(--mute)}
+.day.on{background:var(--go);border-color:var(--go);color:#fff}
+.day.today{outline:2px solid var(--ink);outline-offset:1px}
+.weeknote{font-size:14px;color:var(--mute);margin:8px 0 22px}
+.weeknote b{color:var(--ink)}
+.list{display:grid;gap:10px}
+.rt{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-height:76px}
+.rt:active{transform:scale(.99)}
+.rt h2{font-size:26px}
+.rt p{margin:0;color:var(--mute);font-size:14px;grid-column:1}
+.rt .min{grid-row:1/3;grid-column:2;font:700 22px "Barlow Condensed",sans-serif;white-space:nowrap;text-align:right}
+.rt .min small{display:block;font:500 12px Barlow,sans-serif;color:var(--mute)}
+.tag{display:inline-block;font:600 12px Barlow,sans-serif;background:var(--soft);color:var(--go);border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:4px}
+.opts{display:grid;gap:8px;margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
+.opt{display:flex;align-items:center;gap:12px;min-height:44px}
+.opt input{width:22px;height:22px;accent-color:var(--go);flex:none}
+.opt span small{display:block;color:var(--mute);font-size:13px}
+.foot{font-size:13px;color:var(--mute);margin-top:18px}
+/* resumen antes de empezar */
+#intro .steps{list-style:none;padding:0;margin:14px 0 20px;display:grid;gap:2px}
+#intro .steps li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+#intro .steps li span:last-child{color:var(--mute);white-space:nowrap;font-size:14px}
+#intro .note{background:var(--soft);border-radius:12px;padding:10px 14px;font-size:14px;margin:12px 0 0}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:14px 0 0}
+.seg button{min-height:44px;border-radius:10px;border:1px solid var(--line);background:var(--card)}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cta{width:100%;min-height:56px;border:0;border-radius:14px;background:var(--go);color:#fff;font:700 24px "Barlow Condensed",sans-serif}
+.back{background:none;border:0;padding:8px 0;color:var(--mute);min-height:44px}
+/* sesión */
+#play{position:fixed;inset:0;background:var(--bg);display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+#play.resting{--go:var(--rest)}
+.top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:max(10px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 6px max(16px,env(safe-area-inset-left))}
+.x{border:1px solid var(--line);background:var(--card);border-radius:10px;min-width:44px;height:44px;padding:0 10px;font-size:14px}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--go);width:0;transition:width .3s}
+.count{font-size:14px;color:var(--mute);white-space:nowrap}
+.mid{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;padding:0 max(18px,env(safe-area-inset-right)) 0 max(18px,env(safe-area-inset-left));overflow:auto}
+.kind{font:600 15px Barlow,sans-serif;color:var(--go)}
+#pName{font-size:clamp(34px,9vw,52px);text-wrap:balance;max-width:16ch}
+#pSub{font-size:19px;font-weight:600}
+.ring{position:relative;width:min(62vw,40vh,260px);aspect-ratio:1;margin:8px 0}
+.ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:12}
+.ring .tr{stroke:var(--line)}
+.ring .fg{stroke:var(--go);stroke-linecap:round;transition:stroke-dashoffset .25s linear}
+.ring .big{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(56px,17vw,92px);font-variant-numeric:tabular-nums}
+.ring .unit{position:absolute;left:0;right:0;bottom:24%;font-size:14px;color:var(--mute)}
+#pCue{max-width:34em;color:var(--ink);margin:0;font-size:16px}
+#pHow{max-width:34em;font-size:15px;color:var(--mute)}
+#pHow summary{cursor:pointer;color:var(--go);font-weight:600;min-height:32px}
+#pNext{font-size:14px;color:var(--mute);margin:2px 0 0}
+.skipex{background:none;border:0;color:var(--mute);text-decoration:underline;font-size:14px;min-height:36px}
+.ctrl{display:grid;grid-template-columns:72px minmax(0,1fr) 72px;gap:10px;padding:10px max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.ctrl button{min-height:64px;border-radius:16px;border:1px solid var(--line);background:var(--card);display:grid;place-items:center}
+.ctrl #bMain{background:var(--go);border-color:var(--go);color:#fff;font:700 26px "Barlow Condensed",sans-serif}
+.ctrl svg{width:26px;height:26px}
+#done{text-align:center;padding-top:12vh}
+#done h1{font-size:48px;margin-bottom:8px}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){.ring .fg,.bar i{transition:none}}
+</style>
+</head>
+<body>
+
+<main id="home" class="wrap">
+  <h1>Movilidad y casa</h1>
+  <p class="lead">Una cosa cada vez, con su tiempo. Lo del gym sigue en Hevy.</p>
+  <div class="week" id="week" aria-label="Movilidad de mañana esta semana"></div>
+  <p class="weeknote" id="weeknote"></p>
+  <div class="list" id="list"></div>
+  <div class="opts">
+    <label class="opt"><input type="checkbox" id="oVoz" checked><span>Voz y pitidos<small>Dice el ejercicio y avisa al acabar el tiempo. Con el iPhone en silencio puede no sonar.</small></span></label>
+    <label class="opt"><input type="checkbox" id="oDesc"><span>Semana de descarga<small>Mitad de series y parar con 3-4 en reserva (Cracovia, Navidad, exámenes).</small></span></label>
+    <label class="opt"><input type="checkbox" id="oViaje"><span>De viaje, sin mancuernas<small>Cambia lo que usa las de 3 kg por goma o peso corporal.</small></span></label>
+  </div>
+  <p class="foot">Plan v8 · versión de casa 1 (24/11/2026), pendiente de validar en la revisión del domingo. Los días hechos se guardan solo en este móvil.</p>
+</main>
+
+<main id="intro" class="wrap" hidden>
+  <button class="back" id="iBack">‹ Volver</button>
+  <h1 id="iName" style="font-size:40px"></h1>
+  <p class="lead" id="iDesc"></p>
+  <div class="seg" id="iSeg" hidden>
+    <button id="sFull" aria-pressed="true">Completa</button>
+    <button id="sMin" aria-pressed="false">Mínimo (3, 4, 5 y 7)</button>
+  </div>
+  <p class="note" id="iNote" hidden></p>
+  <ul class="steps" id="iSteps"></ul>
+  <button class="cta" id="iGo">Empezar</button>
+</main>
+
+<section id="play" hidden aria-live="polite">
+  <div class="top">
+    <button class="x" id="bExit" aria-label="Salir">✕</button>
+    <div class="bar"><i id="pBar"></i></div>
+    <span class="count" id="pCount"></span>
+  </div>
+  <div class="mid">
+    <span class="kind" id="pKind"></span>
+    <h2 id="pName"></h2>
+    <div id="pSub"></div>
+    <div class="ring">
+      <svg viewBox="0 0 200 200" aria-hidden="true"><circle class="tr" cx="100" cy="100" r="88"/><circle class="fg" id="pArc" cx="100" cy="100" r="88"/></svg>
+      <div class="big" id="pBig"></div>
+      <div class="unit" id="pUnit"></div>
+    </div>
+    <p id="pCue"></p>
+    <details id="pHow"><summary>Cómo se hace</summary><p id="pHowT"></p></details>
+    <p id="pNext"></p>
+    <button class="skipex" id="bSkipEx">Saltar este ejercicio</button>
+  </div>
+  <div class="ctrl">
+    <button id="bPrev" aria-label="Paso anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <button id="bMain"></button>
+    <button id="bNext" aria-label="Saltar paso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+  </div>
+</section>
+
+<main id="done" class="wrap" hidden>
+  <h1 id="dTitle">Hecho</h1>
+  <p class="lead" id="dText"></p>
+  <button class="cta" id="dHome">Volver al inicio</button>
+</main>
+
+<script>
+{
+// ---------------------------------------------------------------------------
+// DATOS: aquí se cambia el contenido. Plan v8 (CONTEXTO.md y Plan v8).
+// Movilidad: time = segundos; reps = repeticiones (se pasa con "Hecho"); sides = por lado.
+// Sesiones: sets, target, tag (C/M/T), rest (s), timeSet (s, si la serie es por tiempo),
+//           viaje: {n,cue} alternativa sin mancuernas, o null si se salta de viaje; pair: dos ejercicios alternados.
+// ---------------------------------------------------------------------------
+const TAGS = {C:'C: para con 1-2 en reserva; la última, a 0-1', M:'M: las previas a 0-1; la última, al fallo real', T:'T: siempre con 2 en reserva'};
+const HOW = {
+  catcow:'A cuatro patas, redondea la espalda soltando el aire y luego arquéala cogiéndolo. Lento, sin forzar el final.',
+  n9090:'Sentado con las dos rodillas a 90° (una delante, otra al lado). Gira las rodillas de un lado a otro y en cada lado inclina el pecho sobre la pierna de delante, espalda recta.',
+  sent:'Agárrate a algo fijo, baja todo lo que puedas con los talones en el suelo y el pecho arriba. Empuja las rodillas hacia fuera con los codos.',
+  flex:'Rodilla de atrás en el suelo. Antes de avanzar, aprieta el glúteo de esa pierna y mete la pelvis; luego avanza un poco. Debes notarlo delante de la cadera, no en la lumbar.',
+  gem:'Manos en la pared, pie atrás con el talón apoyado. Rodilla recta: gemelo. Luego dobla un poco la rodilla: sóleo.',
+  thread:'A cuatro patas, pasa un brazo por debajo del otro girando la parte alta de la espalda y luego ábrelo hacia el techo.',
+  cuello:'Mano en la frente, luego en la nuca y luego en cada lado; empuja con la cabeza contra la mano al 30-50 % sin moverla. Si notas mareo o molestia, paras.'
+};
+const R = [
+ {id:'mov', name:'Movilidad de mañana', when:'Al levantarte, antes de desayunar', min:true, blocks:[
+   {n:'Cat-cow', reps:8, d:'8 lentas', cue:'Redondea soltando el aire, arquea cogiéndolo.', how:HOW.catcow, est:40},
+   {n:'90/90 de cadera', reps:6, d:'6 por lado, alternando', cue:'Gira las rodillas e inclina el pecho sobre la de delante.', how:HOW.n9090, est:60},
+   {n:'Sentadilla profunda', time:60, cue:'Agarrado a algo, talones abajo, codos abren rodillas.', how:HOW.sent, m:1},
+   {n:'Flexor de cadera', time:30, sides:1, cue:'Aprieta el glúteo y mete la pelvis antes de avanzar.', how:HOW.flex, m:1},
+   {n:'Gemelo en pared', sides:1, seq:[{n:'Gemelo',time:30,cue:'Rodilla recta, talón apoyado.'},{n:'Sóleo',time:20,cue:'Misma postura, dobla un poco la rodilla.'}], how:HOW.gem, m:1},
+   {n:'Thread the needle', reps:6, sides:1, d:'6 lentas', cue:'Gira la parte alta de la espalda y abre hacia el techo.', how:HOW.thread, est:25},
+   {n:'Cuello isométrico', seq:[{n:'Frente',time:10},{n:'Nuca',time:10},{n:'Lado izquierdo',time:10},{n:'Lado derecho',time:10}], cue:'Empuja contra la mano al 30-50 %, sin moverte.', how:HOW.cuello, m:1}
+ ]},
+ {id:'correr', name:'Tras correr', when:'Martes y sábado, al volver', blocks:[
+   {n:'Elevaciones de punta', reps:20, d:'2 × 20', sets:2, rest:30, cue:'Talón apoyado, levanta la punta. Si notas la espinilla: superficie blanda y menos volumen.', est:40},
+   {n:'Gemelo y sóleo', time:45, sides:1, cue:'Manos en la pared; a mitad, dobla un poco la rodilla.', how:HOW.gem},
+   {n:'Isquio sentado', time:45, sides:1, cue:'Espalda recta, bisagra de cadera, cuello neutro.'},
+   {n:'Cuádriceps de pie', time:45, sides:1, cue:'Talón al glúteo y pelvis metida.'},
+   {n:'Glúteo en figura de 4', time:45, sides:1, cue:'Tumbado, tobillo sobre la rodilla contraria.'}
+ ]},
+ {id:'ante', name:'Antebrazo', when:'Al salir del gym, martes y viernes', blocks:[
+   {n:'Flexores de antebrazo', time:30, sides:1, cue:'Brazo estirado, palma arriba, tira de los dedos hacia abajo.'},
+   {n:'Extensores de antebrazo', time:30, sides:1, cue:'Brazo estirado, palma abajo, dobla la muñeca y tira suave.'}
+ ]},
+ {id:'pierna', name:'Pierna en casa', when:'Lunes o jueves sin gym', gym:[1,4], note:'Con poco peso, la serie solo cuenta si llegas cerca del fallo de verdad. Regla roja: molestia de 4 o más, o irradiación, y ese ejercicio se para.',
+  warm:[
+   {n:'Sentadilla profunda dinámica', reps:8, d:'8 bajadas lentas', est:40},
+   {n:'CARs de cadera', reps:5, d:'5 círculos por dirección y pierna', cue:'Lentos y amplios, el resto del cuerpo quieto.', est:60},
+   {n:'Puente de glúteo', reps:10, d:'10 con 2 s arriba', est:45},
+   {n:'Terminal knee extension', reps:15, d:'15 por pierna', cue:'Goma detrás de la rodilla, estírala del todo contra ella.', est:50},
+   {n:'Monster walk con goma', reps:10, d:'10 pasos por dirección', est:40}],
+  ex:[
+   {n:'Saltos con contramovimiento', sets:3, target:'4 saltos', rest:75, cue:'Máxima altura y aterriza suave, rodillas alineadas. Si molesta la rodilla, fuera.'},
+   {n:'Búlgara', sets:3, target:'por pierna', tag:'C', rest:120, cue:'Pie de atrás en una silla, mancuernas de 3 kg, bajada de 3 s. Siéntate 30 s entre piernas.', viaje:{n:'Búlgara sin peso',cue:'Pie de atrás en una silla, bajada de 4 s. Siéntate 30 s entre piernas.'}},
+   {n:'Sentadilla con pausa', sets:3, target:'hasta 1-2 en reserva', tag:'C', rest:90, cue:'Mancuerna en el pecho, 3 s de bajada y 2 s de pausa abajo, talones en el suelo.', viaje:{n:'Sentadilla con pausa',cue:'Sin peso: 4 s de bajada y 3 s de pausa abajo.'}},
+   {n:'Rumano a una pierna', sets:3, target:'8-12 por pierna', tag:'T', rest:90, cue:'3 s de bajada y 1 s de pausa; la cadera va atrás, espalda neutra. Mano en la pared si hace falta.'},
+   {n:'Curl femoral deslizante', sets:3, target:'al fallo', tag:'M', rest:90, cue:'Boca arriba, talones en una toalla sobre suelo liso, cadera arriba. Si tira demasiado, solo la vuelta lenta.'},
+   {n:'Hip thrust a una pierna', sets:3, target:'al fallo, por pierna', tag:'M', rest:90, cue:'Espalda alta en el borde del sofá, 1 s apretando arriba, costillas abajo.'},
+   {pair:[
+     {n:'Gemelo a una pierna', sets:3, target:'al fallo, por pierna', tag:'M', cue:'En un escalón, 2 s de pausa abajo, recorrido completo, mancuerna en la mano del mismo lado.', viaje:{n:'Gemelo a una pierna',cue:'En un escalón, sin peso, 2 s de pausa abajo.'}},
+     {n:'Copenhague corto', sets:2, timeSet:25, sides:1, target:'20-30 s por lado', cue:'Rodilla de arriba apoyada en el sofá, cuerpo recto. Aductor.'}], rest:45},
+   {pair:[
+     {n:'Plancha RKC', sets:2, timeSet:25, target:'20-30 s', cue:'Aprieta glúteos y tira de los codos hacia los pies: tensión máxima.'},
+     {n:'Cuello con la mano', sets:2, target:'12 lentas delante y 12 detrás', cue:'Empuja contra tu mano al 50 %, recorrido corto y lento. Si mareo o molestia, paras.'}], rest:45},
+   {n:'Curl de muñeca', sets:2, target:'al fallo', tag:'M', rest:45, cue:'Antebrazo apoyado en el muslo, 3 kg, recorrido completo.', viaje:{n:'Curl de muñeca con goma',cue:'Goma pisada, antebrazo en el muslo, recorrido completo.'}},
+   {n:'Sorensen (opcional)', sets:2, timeSet:40, target:'30-60 s', rest:60, opt:1, cue:'Solo si alguien o un mueble pesado te sujeta los pies, cadera en el borde de la cama. Si no, salta este ejercicio.'}
+  ]},
+ {id:'torso', name:'Torso en casa', when:'Martes o viernes sin gym', gym:[2,5], note:'Nada de dominadas ni fondos hasta cumplir los criterios del hombro (4 semanas sin molestia en ningún press y test de 15 kg × 8). Todo lo vertical, en neutro.',
+  warm:[
+   {n:'Movilidad activa de hombros', time:60, cue:'Círculos amplios y brazos abiertos-cruzados.'},
+   {n:'Rotación externa con goma', reps:12, d:'12 por brazo', cue:'Codo pegado al cuerpo.', est:50},
+   {n:'Rotación interna con goma', reps:12, d:'12 por brazo', cue:'Codo pegado al cuerpo.', est:50},
+   {n:'Band pull-apart', reps:15, d:'15', est:35},
+   {n:'Wall slides', reps:10, d:'10', cue:'Espalda contra la pared, brazos arriba sin despegarlos.', est:40},
+   {n:'Dislocates con goma', reps:10, d:'10', est:35}],
+  ex:[
+   {n:'Flexiones con agarre neutro', sets:3, target:'hasta 1-2 en reserva', tag:'C', rest:120, cue:'Manos sobre las mancuernas, palmas enfrentadas, codos a 45°. Si pasas de 30, pies en una silla.', viaje:{n:'Flexiones',cue:'Manos en el suelo algo giradas hacia fuera, codos a 45°. Si pasas de 30, pies en una silla.'}},
+   {n:'Jalón con goma desde la barra', sets:3, target:'12-20 por brazo', tag:'M', rest:90, cue:'De rodillas, agarre neutro, codo hacia el bolsillo y 1 s de pausa abajo.', viaje:{n:'Jalón con goma',cue:'Goma anclada en lo alto de una puerta, agarre neutro, 1 s de pausa abajo.'}},
+   {n:'Remo con goma', sets:3, target:'al fallo', tag:'M', rest:90, cue:'Anclada a la altura del pecho o en los pies; agarre neutro, pecho fuera, 1 s de pausa atrás.'},
+   {n:'Aperturas con goma', sets:2, target:'15-25', tag:'M', rest:75, cue:'Goma por la espalda o anclada detrás; codos algo doblados, junta las manos delante.'},
+   {n:'Elevación lateral unilateral', sets:4, target:'al fallo', tag:'M', rest:90, cue:'Agarrado a la puerta, sube a la altura del hombro, 2 s de bajada. En la última, sigue con medias repeticiones.', viaje:{n:'Elevación lateral con goma',cue:'Goma pisada, sube a la altura del hombro, 2 s de bajada. En la última, medias repeticiones.'}},
+   {n:'Face pull con goma', sets:2, target:'15-25', tag:'M', rest:75, cue:'Anclada a la altura de la cara; tira a la frente abriendo los codos, pulgares atrás.'},
+   {pair:[
+     {n:'Curl de bíceps con goma', sets:4, target:'al fallo', tag:'M', cue:'Goma pisada, codos quietos, 3 s de bajada. Si se queda corta, goma + 3 kg.'},
+     {n:'Tríceps sobre la cabeza con goma', sets:3, target:'al fallo', tag:'M', cue:'Goma pisada detrás o colgada; codos arriba y estira del todo.'}], rest:60},
+   {n:'Curl de muñeca inverso', sets:2, target:'al fallo', tag:'M', rest:45, cue:'Palma abajo, antebrazo en el muslo, 3 kg.', viaje:{n:'Curl de muñeca inverso con goma',cue:'Goma pisada, palma abajo, antebrazo en el muslo.'}}
+  ]}
+];
+
+// ---------------------------------------------------------------------------
+// Estado y guardado (solo en este navegador)
+// ---------------------------------------------------------------------------
+const $ = id => document.getElementById(id);
+const store = {get(k,d){try{const v=localStorage.getItem('cm-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}}, set(k,v){try{localStorage.setItem('cm-'+k,JSON.stringify(v))}catch(e){}}};
+const opts = store.get('opts',{voz:true,desc:false,viaje:false});
+$('oVoz').checked=opts.voz; $('oDesc').checked=opts.desc; $('oViaje').checked=opts.viaje;
+for (const [id,k] of [['oVoz','voz'],['oDesc','desc'],['oViaje','viaje']]) $(id).addEventListener('change',e=>{opts[k]=e.target.checked;store.set('opts',opts);renderHome()});
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const mmss = s => s>=60 ? `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}` : String(s);
+
+// ---------------------------------------------------------------------------
+// Construcción de pasos. k: gap (transición), time, reps, set, rest
+// ---------------------------------------------------------------------------
+const sideName = i => i===0 ? 'lado izquierdo' : 'lado derecho';
+function mobSteps(blocks, kind){
+  const out=[];
+  blocks.forEach((b,bi)=>{
+    const sides = b.sides ? [0,1] : [null];
+    const reps = b.sets||1;
+    for (let r=0;r<reps;r++) sides.forEach((s,si)=>{
+      const side = s==null ? '' : sideName(s);
+      if (si>0) out.push({k:'gap',secs:5,title:'Cambia de lado',sub:b.n,ex:bi});
+      if (b.seq) b.seq.forEach((q,qi)=>{
+        if (qi>0) out.push({k:'gap',secs:3,title:q.n,sub:'Siguiente',ex:bi});
+        out.push({k:'time',secs:q.time,kind,title:b.n+(b.seq.length>1&&b.n!==q.n?': '+q.n:''),sub:[side,q.time+' s'].filter(Boolean).join(' · '),cue:q.cue||b.cue,how:b.how,ex:bi});
+      });
+      else if (b.time) out.push({k:'time',secs:b.time,kind,title:b.n,sub:[side,b.time+' s'].filter(Boolean).join(' · '),cue:b.cue,how:b.how,ex:bi});
+      else out.push({k:'reps',reps:b.reps,est:b.est||b.reps*5,kind,title:b.n,sub:[side,b.d].filter(Boolean).join(' · '),cue:b.cue,how:b.how,ex:bi});
+      if (b.sets && r<reps-1 && si===sides.length-1) out.push({k:'rest',secs:b.rest||30,title:'Descanso',ex:bi});
+    });
+    if (bi<blocks.length-1) out.push({k:'gap',secs:5,title:blocks[bi+1].n,sub:'Siguiente',ex:bi+1});
+  });
+  return out;
+}
+function prep(e){
+  if (opts.viaje && e.viaje===null) return null;
+  const x = Object.assign({}, e, opts.viaje && e.viaje ? e.viaje : {});
+  if (opts.desc){ x.sets=Math.max(1,Math.ceil(x.sets/2)); x.target = x.timeSet ? x.target : 'para con 3-4 en reserva'; x.tag=null; }
+  return x;
+}
+function setSteps(x, i, exId){
+  const base = {kind:x.tag?TAGS[x.tag]:'', cue:x.cue, ex:exId};
+  const sub = `Serie ${i} de ${x.sets} · ${x.target}`;
+  if (x.timeSet && x.sides) return [{...base,k:'time',secs:x.timeSet,title:x.n,sub:sub+' · izquierdo'},{k:'gap',secs:5,title:'Cambia de lado',sub:x.n,ex:exId},{...base,k:'time',secs:x.timeSet,title:x.n,sub:sub+' · derecho'}];
+  if (x.timeSet) return [{...base,k:'time',secs:x.timeSet,title:x.n,sub}];
+  return [{...base,k:'set',title:x.n,sub,est:x.target.includes('pierna')||x.target.includes('brazo')?75:40}];
+}
+function workSteps(r){
+  const out = mobSteps(r.warm,'Calentamiento').map(s=>({...s,ex:'w'+s.ex}));
+  out.push({k:'gap',secs:8,title:'Empieza la sesión',sub:'Fin del calentamiento',ex:'w'});
+  r.ex.forEach((e,ei)=>{
+    let rows=[];
+    if (e.pair){
+      const xs=e.pair.map(prep).filter(Boolean);
+      const n=Math.max(...xs.map(x=>x.sets));
+      for (let i=1;i<=n;i++) xs.forEach(x=>{ if (i<=x.sets) rows.push(setSteps(x,i,ei)); });
+    } else { const x=prep(e); if (!x) return; for (let i=1;i<=x.sets;i++) rows.push(setSteps(x,i,ei)); }
+    rows.forEach(st=>{ out.push(...st); out.push({k:'rest',secs:e.rest||60,title:'Descanso',ex:ei}); });
+  });
+  while (out.length && out[out.length-1].k==='rest') out.pop();
+  return out;
+}
+function build(r, minimo){
+  if (r.ex) return workSteps(r);
+  const blocks = minimo ? r.blocks.filter(b=>b.m) : r.blocks;
+  return [{k:'gap',secs:5,title:blocks[0].n,sub:'Prepárate',ex:-1}, ...mobSteps(blocks,'')];
+}
+const est = steps => Math.round(steps.reduce((a,s)=>a+(s.secs||s.est||0),0)/60);
+
+// ---------------------------------------------------------------------------
+// Inicio
+// ---------------------------------------------------------------------------
+function weekDone(){
+  const hechos=store.get('hechos',[]); const now=new Date();
+  const mon=new Date(now); mon.setDate(now.getDate()-((now.getDay()+6)%7));
+  const days=[...Array(7)].map((_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return ymd(d)});
+  return {days, today:ymd(now), mov:new Set(hechos.filter(h=>h.r==='mov').map(h=>h.d)), casa:hechos.filter(h=>(h.r==='pierna'||h.r==='torso')&&days.includes(h.d)).length};
+}
+function renderHome(){
+  const w=weekDone(), L='LMXJVSD';
+  $('week').innerHTML=w.days.map((d,i)=>`<div class="day${w.mov.has(d)?' on':''}${d===w.today?' today':''}" title="${d}">${L[i]}</div>`).join('');
+  const n=w.days.filter(d=>w.mov.has(d)).length;
+  $('weeknote').innerHTML=`Movilidad esta semana: <b>${n} de 7</b>${w.casa?` · sesiones en casa: <b>${w.casa}</b>`:''} (para el check-in del domingo).`;
+  const dow=new Date().getDay();
+  $('list').innerHTML=R.map((r,i)=>{
+    const tag = r.gym && r.gym.includes(dow) ? '<span class="tag">hoy toca gym</span>' : '';
+    return `<button class="rt" data-i="${i}"><h2>${r.name}${tag}</h2><p>${r.when}</p><span class="min">${est(build(r,false))}<small>min</small></span></button>`;
+  }).join('');
+}
+$('list').addEventListener('click',e=>{const b=e.target.closest('.rt'); if(b) openIntro(+b.dataset.i)});
+
+let cur=null, minimo=false;
+function show(id){ for (const v of ['home','intro','play','done']) $(v).hidden = v!==id; window.scrollTo(0,0); }
+function openIntro(i){
+  cur=R[i]; minimo=false;
+  $('iName').textContent=cur.name;
+  $('iSeg').hidden=!cur.min; $('sFull').setAttribute('aria-pressed','true'); $('sMin').setAttribute('aria-pressed','false');
+  const notes=[cur.note, cur.ex&&opts.desc?'Descarga: mitad de series, mismo esfuerzo técnico, nada al fallo.':'', cur.ex&&opts.viaje?'Modo viaje: sin mancuernas.':''].filter(Boolean);
+  $('iNote').hidden=!notes.length; $('iNote').textContent=notes.join(' ');
+  renderIntro(); show('intro');
+}
+function renderIntro(){
+  const steps=build(cur,minimo);
+  $('iDesc').textContent=`${cur.when} · unos ${est(steps)} min`;
+  const rows=cur.ex
+    ? [{n:'Calentamiento',d:`${cur.warm.length} ejercicios`}, ...cur.ex.flatMap(e=>e.pair?[{n:e.pair.map(p=>(prep(p)||{}).n).filter(Boolean).join(' + '),d:'alternados'}]:(prep(e)?[{n:prep(e).n,d:`${prep(e).sets} × ${prep(e).target}`}]:[]))]
+    : (minimo?cur.blocks.filter(b=>b.m):cur.blocks).map(b=>({n:b.n,d:b.d||(b.seq?b.seq.map(q=>q.time+' s').join(' + '):b.time+' s')+(b.sides?' por lado':'')}));
+  $('iSteps').innerHTML=rows.map(r=>`<li><span>${r.n}</span><span>${r.d}</span></li>`).join('');
+}
+$('iBack').addEventListener('click',()=>{renderHome();show('home')});
+$('sFull').addEventListener('click',()=>{minimo=false;$('sFull').setAttribute('aria-pressed','true');$('sMin').setAttribute('aria-pressed','false');renderIntro()});
+$('sMin').addEventListener('click',()=>{minimo=true;$('sMin').setAttribute('aria-pressed','true');$('sFull').setAttribute('aria-pressed','false');renderIntro()});
+
+// ---------------------------------------------------------------------------
+// Sonido, voz y pantalla encendida
+// ---------------------------------------------------------------------------
+let ac=null, lock=null;
+function unlockAudio(){
+  try{ if (navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){}
+  try{ ac = ac || new (window.AudioContext||window.webkitAudioContext)(); ac.resume(); }catch(e){}
+  try{ speechSynthesis.speak(new SpeechSynthesisUtterance('')); }catch(e){}
+}
+function beep(f=880,ms=120){
+  if (!opts.voz||!ac) return;
+  try{ const o=ac.createOscillator(),g=ac.createGain(); o.frequency.value=f; o.connect(g); g.connect(ac.destination);
+    g.gain.setValueAtTime(.25,ac.currentTime); g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+ms/1000); o.start(); o.stop(ac.currentTime+ms/1000); }catch(e){}
+}
+let voice=null;
+function say(t){
+  if (!opts.voz||!('speechSynthesis' in window)) return;
+  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='es-ES';
+    voice = voice || speechSynthesis.getVoices().find(v=>v.lang&&v.lang.startsWith('es')); if (voice) u.voice=voice; u.rate=1.05; speechSynthesis.speak(u); }catch(e){}
+}
+async function keepAwake(on){
+  try{ if (on && 'wakeLock' in navigator) lock = await navigator.wakeLock.request('screen'); else if (!on && lock){ await lock.release(); lock=null; } }catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{ if (!document.hidden && !$('play').hidden) keepAwake(true); });
+
+// ---------------------------------------------------------------------------
+// Reproductor
+// ---------------------------------------------------------------------------
+const C = 2*Math.PI*88; $('pArc').style.strokeDasharray=C;
+let steps=[], idx=0, endAt=0, left=0, paused=false, timer=null, lastBeep=-1, exitArm=false;
+function start(){
+  unlockAudio(); steps=build(cur,minimo); idx=0; show('play'); keepAwake(true); enter();
+  timer=setInterval(tick,200);
+}
+function enter(){
+  const s=steps[idx]; paused=false; lastBeep=-1; exitArm=false; $('bExit').textContent='✕';
+  $('play').classList.toggle('resting', s.k==='rest'||s.k==='gap');
+  $('pKind').textContent = s.k==='rest' ? 'Descanso · después viene' : s.k==='gap' ? (s.sub||'') : (s.kind||'');
+  $('pName').textContent = s.k==='rest' ? nextTitle() : s.title;
+  $('pSub').textContent = s.k==='rest'||s.k==='gap' ? '' : (s.sub||'');
+  $('pCue').textContent = s.k==='rest'||s.k==='gap' ? '' : (s.cue||'');
+  $('pHow').hidden = !s.how || s.k==='rest' || s.k==='gap'; $('pHowT').textContent=s.how||''; $('pHow').open=false;
+  const nt = s.k==='rest'||s.k==='gap' ? '' : nextTitle();
+  $('pNext').textContent = nt ? 'Después: '+nt : (s.k==='rest'||s.k==='gap'?'':'Último paso');
+  $('bSkipEx').hidden = s.k==='gap' || typeof s.ex!=='number' || s.ex<0;
+  $('pBar').style.width = (idx/steps.length*100)+'%';
+  $('pCount').textContent = `${idx+1}/${steps.length}`;
+  if (s.secs){ left=s.secs; endAt=Date.now()+left*1000; }
+  draw();
+  if (s.k==='rest') say(`Descanso, ${s.secs} segundos. Después, ${nextTitle()}`);
+  else if (s.k==='gap') say(s.sub==='Cambia de lado'||s.title==='Cambia de lado' ? 'Cambia de lado' : `Siguiente: ${s.title}`);
+  else say(`${s.title}. ${s.sub||''}`);
+}
+function nextTitle(){
+  for (let j=idx+1;j<steps.length;j++){ const t=steps[j]; if (t.k!=='rest'&&t.k!=='gap') return t.title+(t.sub&&t.k==='set'?', '+t.sub.split(' · ')[0].toLowerCase():''); }
+  return '';
+}
+function draw(){
+  const s=steps[idx], timed=!!s.secs;
+  if (timed){
+    const rem=Math.max(0,Math.ceil(left)); $('pBig').textContent=mmss(rem); $('pUnit').textContent=rem>=60?'min':'s';
+    $('pArc').style.strokeDashoffset = C*(1-left/s.secs);
+  } else {
+    $('pBig').textContent = s.k==='reps' ? s.reps : '✓'; $('pUnit').textContent = s.k==='reps' ? 'repeticiones' : '';
+    $('pArc').style.strokeDashoffset = 0;
+  }
+  $('bMain').textContent = s.k==='rest' ? '+15 s' : timed ? (paused?'Seguir':'Pausa') : s.k==='set' ? 'Serie hecha' : 'Hecho';
+}
+function tick(){
+  const s=steps[idx]; if (!s||!s.secs||paused) return;
+  left=(endAt-Date.now())/1000;
+  const r=Math.ceil(left);
+  if (r<=3 && r>0 && r!==lastBeep){ lastBeep=r; beep(660,90); }
+  if (left<=0){ beep(990,350); go(1); return; }
+  draw();
+}
+function go(d){
+  idx+=d;
+  if (idx<0) idx=0;
+  if (idx>=steps.length) return finish();
+  enter();
+}
+function finish(){
+  clearInterval(timer); keepAwake(false);
+  const h=store.get('hechos',[]); h.push({d:ymd(new Date()),r:cur.id,min:minimo}); store.set('hechos',h.slice(-120));
+  $('dTitle').textContent = cur.id==='mov'&&minimo ? 'Mínimo hecho' : 'Hecho';
+  $('dText').textContent = `${cur.name}: apuntado en este móvil.` + (cur.ex ? ' Si algo molestó, dilo en la revisión del domingo.' : '');
+  say('Hecho. Buen trabajo'); show('done');
+}
+$('bMain').addEventListener('click',()=>{
+  const s=steps[idx];
+  if (s.k==='rest'){ endAt+=15000; left+=15; draw(); return; }
+  if (s.secs){ if (paused){ paused=false; endAt=Date.now()+left*1000; } else { paused=true; left=(endAt-Date.now())/1000; } draw(); return; }
+  go(1);
+});
+$('bNext').addEventListener('click',()=>go(1));
+$('bPrev').addEventListener('click',()=>{ let j=idx-1; while (j>0 && (steps[j].k==='rest'||steps[j].k==='gap')) j--; idx=Math.max(0,j); enter(); });
+$('bSkipEx').addEventListener('click',()=>{ const ex=steps[idx].ex; let j=idx; while (j<steps.length && steps[j].ex===ex) j++; while (j<steps.length && steps[j].k==='rest') j++; idx=j-1; go(1); });
+$('bExit').addEventListener('click',()=>{
+  if (!exitArm){ exitArm=true; $('bExit').textContent='¿Salir?'; setTimeout(()=>{exitArm=false;$('bExit').textContent='✕'},3000); return; }
+  clearInterval(timer); keepAwake(false); try{speechSynthesis.cancel()}catch(e){} renderHome(); show('home');
+});
+$('iGo').addEventListener('click',start);
+$('dHome').addEventListener('click',()=>{renderHome();show('home')});
+renderHome();
+
+// Para pruebas fuera del navegador
+window.__cm = {R, build, est, opts};
+if ('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
